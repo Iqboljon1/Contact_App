@@ -28,32 +28,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         MyShare.init(this)
-        BuildRecyclerView()
+        buildRecyclerView()
 
         image_add_contact.setOnClickListener {
-            BuildAlertDialog()
+            buildAlertDialog()
             dialog.show()
         }
 
-        editTextSearch.addTextChangedListener {
-            SearchContact(editTextSearch.text.toString())
-        }
     }
 
-    private fun SearchContact(stringName: String) {
-        val arrayList = ArrayList<UserData>()
-        for (i in 0 until  arrayListContacts.size) {
-            if (arrayListContacts[i].name.toString().uppercase() == stringName.uppercase() ){
-                arrayList.add(arrayListContacts[i])
-            }
-        }
-        val adapter = MyAdapter(this , arrayList)
-        recycler.adapter = adapter
-        println(arrayList)
-        println(stringName)
-    }
-
-    private fun BuildAlertDialog() {
+    private fun buildAlertDialog() {
         val alertDialog = AlertDialog.Builder(this)
         val view = layoutInflater.inflate(R.layout.dialog_add_contact, null, false)
         val editTextName = view.findViewById<AppCompatEditText>(R.id.editText_name)
@@ -61,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         val btnCardSave = view.findViewById<CardView>(R.id.btn_card_save)
         btnCardSave.setOnClickListener {
             dialog.cancel()
-            SaveContact(
+            saveContact(
                 editTextName.text.toString().trim(),
                 0,
                 editTextNumber.text.toString().trim()
@@ -73,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
     }
 
-    private fun SaveContact(
+    private fun saveContact(
         stringName: String,
         intImage: Int,
         stringNumber: String
@@ -83,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         myAdapter.notifyItemChanged(arrayListContacts.size)
     }
 
-    private fun BuildRecyclerView() {
+    private fun buildRecyclerView() {
         arrayListContacts = ArrayList()
         arrayListContacts = MyShare.dataList!!
         myAdapter = MyAdapter(this, arrayListContacts)

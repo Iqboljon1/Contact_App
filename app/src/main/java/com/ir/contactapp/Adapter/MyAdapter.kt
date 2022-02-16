@@ -27,8 +27,8 @@ import kotlinx.android.synthetic.main.item_contact.view.*
 import java.net.URI
 
 class MyAdapter(
-    val context: Context,
-    val arrayListContacts: ArrayList<UserData>,
+    private val context: Context,
+    private val arrayListContacts: ArrayList<UserData>,
 ) :
     RecyclerView.Adapter<MyAdapter.VH>() {
 
@@ -36,8 +36,6 @@ class MyAdapter(
 
     inner class VH(var itemRv: View) : RecyclerView.ViewHolder(itemRv) {
         fun onBind(userData: UserData) {
-            val animation = AnimationUtils.loadAnimation(context, R.anim.item_anim)
-            itemRv.animation = animation
             itemRv.tv_name.text = userData.name
             itemRv.tv_number.text = userData.number
             if (userData.image != 0) {
@@ -76,12 +74,12 @@ class MyAdapter(
                 arrayOf(Manifest.permission.RECEIVE_SMS, Manifest.permission.SEND_SMS),
                 111)
         } else {
-            BuildDialogSendMessage(stringName, stringNumber)
+            buildDialogSendMessage(stringName, stringNumber)
             dialog.show()
         }
     }
 
-    private fun BuildDialogSendMessage(stringName: String, stringNumber: String) {
+    private fun buildDialogSendMessage(stringName: String, stringNumber: String) {
         val alertDialog = AlertDialog.Builder(context)
         val view = LayoutInflater.from(context).inflate(R.layout.dialog_send_message, null, false)
         val contactName = view.findViewById<TextView>(R.id.tv_name)
@@ -90,7 +88,7 @@ class MyAdapter(
         val btnCardSend = view.findViewById<CardView>(R.id.btn_card_send)
 
         btnCardSend.setOnClickListener {
-            SendMessage(stringNumber, edtTextMessage.text.toString().trim())
+            sendMessage(stringNumber, edtTextMessage.text.toString().trim())
         }
 
         contactName.text = stringName
@@ -101,7 +99,7 @@ class MyAdapter(
         dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
     }
 
-    private fun SendMessage(number: String, message: String) {
+    private fun sendMessage(number: String, message: String) {
         try {
             val smsManager = SmsManager.getDefault()
             smsManager.sendTextMessage(number, "ME", message, null, null)
