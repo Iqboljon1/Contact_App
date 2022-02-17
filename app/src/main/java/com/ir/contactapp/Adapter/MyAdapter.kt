@@ -32,7 +32,8 @@ class MyAdapter(
 ) :
     RecyclerView.Adapter<MyAdapter.VH>() {
 
-    lateinit var dialog: AlertDialog
+    private lateinit var dialog: AlertDialog
+    var booleanAntiBag = true
 
     inner class VH(var itemRv: View) : RecyclerView.ViewHolder(itemRv) {
         fun onBind(userData: UserData) {
@@ -74,8 +75,11 @@ class MyAdapter(
                 arrayOf(Manifest.permission.RECEIVE_SMS, Manifest.permission.SEND_SMS),
                 111)
         } else {
-            buildDialogSendMessage(stringName, stringNumber)
-            dialog.show()
+            if (booleanAntiBag) {
+                buildDialogSendMessage(stringName, stringNumber)
+                dialog.show()
+                booleanAntiBag = false
+            }
         }
     }
 
@@ -89,6 +93,10 @@ class MyAdapter(
 
         btnCardSend.setOnClickListener {
             sendMessage(stringNumber, edtTextMessage.text.toString().trim())
+        }
+
+        alertDialog.setOnCancelListener {
+            booleanAntiBag = true
         }
 
         contactName.text = stringName

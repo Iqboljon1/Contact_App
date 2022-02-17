@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var arrayListContacts: ArrayList<UserData>
     lateinit var myAdapter: MyAdapter
     lateinit var dialog: AlertDialog
+    var booleanAntiBag = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -31,8 +32,11 @@ class MainActivity : AppCompatActivity() {
         buildRecyclerView()
 
         image_add_contact.setOnClickListener {
-            buildAlertDialog()
-            dialog.show()
+            if (booleanAntiBag) {
+                buildAlertDialog()
+                dialog.show()
+                booleanAntiBag = false
+            }
         }
 
     }
@@ -51,6 +55,13 @@ class MainActivity : AppCompatActivity() {
                 editTextNumber.text.toString().trim()
             )
         }
+
+        alertDialog.setOnCancelListener {
+            booleanAntiBag = true
+        }
+
+
+
         alertDialog.setView(view)
         dialog = alertDialog.create()
         dialog.window!!.attributes.windowAnimations = R.style.MyAnimation
