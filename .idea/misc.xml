@@ -4,14 +4,16 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/drawable/card_backgraund.xml" value="0.21574074074074073" />
+        <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/drawable/ic_add.xml" value="0.2203125" />
         <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.2169230769230769" />
         <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/drawable/ic_call.xml" value="0.2169230769230769" />
-        <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/layout/activity_main.xml" value="0.20416666666666666" />
+        <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/layout/activity_main.xml" value="0.13703703703703704" />
         <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/layout/activity_main2.xml" value="0.2" />
         <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/layout/dialog_add_contact.xml" value="0.1621376811594203" />
         <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/layout/dialog_send_message.xml" value="0.13733741392501914" />
-        <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/layout/item_contact.xml" value="0.20416666666666666" />
+        <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/layout/item_contact.xml" value="0.13703703703703704" />
         <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/layout/item_history_from1.xml" value="0.8861386138613861" />
+        <entry key="..\:/Codial/Project/ContactApp/app/src/main/res/menu/popup_menu.xml" value="0.1" />
       </map>
     </option>
   </component>
