@@ -7,5 +7,6 @@ interface MyDbInterface {
     fun addContact(userData: UserData)
     fun updateContact(context: Context, userData: UserData)
     fun deleteContact(context: Context, id: Int)
+    fun searchContact(context: Context , string: String): ArrayList<UserData>
     fun getContact(): ArrayList<UserData>
 }

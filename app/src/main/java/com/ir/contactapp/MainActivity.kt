@@ -3,6 +3,8 @@ package com.ir.contactapp
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -10,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
+import androidx.core.widget.doOnTextChanged
 import com.ir.contactapp.Adapter.MyAdapter
 import com.ir.contactapp.Interface.MyOnClickListener
 import com.ir.contactapp.Interface.MyOnClickListenerFromDelete
@@ -20,12 +24,11 @@ class MainActivity : AppCompatActivity() {
     lateinit var dialog: AlertDialog
     private lateinit var myDbHelper: MyDbHelper
 
-    var booleanAntiBag = true
+    private var booleanAntiBag = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         myDbHelper = MyDbHelper(this)
-
         fab.supportImageTintList = ContextCompat.getColorStateList(this, R.color.white)
 
         fab.setOnClickListener {
@@ -35,7 +38,18 @@ class MainActivity : AppCompatActivity() {
                 booleanAntiBag = false
             }
         }
+        editTextSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
 
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                var string = s
+                searchContact(string.toString())
+            }
+        })
     }
 
 
@@ -83,15 +97,40 @@ class MainActivity : AppCompatActivity() {
         dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
     }
 
+    private fun searchContact(string: String) {
+        val arrayList = ArrayList<UserData>()
+        arrayList.addAll(myDbHelper.searchContact(this, string))
+        var myAdapter = MyAdapter(this, arrayList, object : MyOnClickListener {
+            override fun onClick(
+                stringName: String,
+                stringNumber: String,
+                stringCreate: String,
+                stringPhoto: String,
+                id: Int,
+            ) {
+                if (booleanAntiBag) {
+                    buildAlertDialog(stringName, stringNumber, stringCreate, stringPhoto, id)
+                    dialog.show()
+                    booleanAntiBag = false
+                }
+            }
+        }, object : MyOnClickListenerFromDelete {
+            override fun onClickDelete(id: Int) {
+                deleteContact(id)
+            }
+        })
+        recycler.adapter = myAdapter
+    }
+
     private fun updateContact(userData: UserData) {
         myDbHelper = MyDbHelper(this)
         myDbHelper.updateContact(this, userData)
         onResume()
     }
 
-    private fun deleteContact(int: Int){
+    private fun deleteContact(int: Int) {
         myDbHelper = MyDbHelper(this)
-        myDbHelper.deleteContact(this , int)
+        myDbHelper.deleteContact(this, int)
         onResume()
     }
 
@@ -110,7 +149,7 @@ class MainActivity : AppCompatActivity() {
         arrayListContact.addAll(myDbHelper.getContact())
 
         val myAdapter =
-            MyAdapter( this, arrayListContact, object : MyOnClickListener {
+            MyAdapter(this, arrayListContact, object : MyOnClickListener {
                 override fun onClick(
                     stringName: String,
                     stringNumber: String,
@@ -118,10 +157,13 @@ class MainActivity : AppCompatActivity() {
                     stringPhoto: String,
                     id: Int,
                 ) {
-                    buildAlertDialog(stringName, stringNumber, stringCreate, stringPhoto, id)
-                    dialog.show()
+                    if (booleanAntiBag) {
+                        buildAlertDialog(stringName, stringNumber, stringCreate, stringPhoto, id)
+                        dialog.show()
+                        booleanAntiBag = false
+                    }
                 }
-            } , object : MyOnClickListenerFromDelete{
+            }, object : MyOnClickListenerFromDelete {
                 override fun onClickDelete(id: Int) {
                     deleteContact(id)
                 }

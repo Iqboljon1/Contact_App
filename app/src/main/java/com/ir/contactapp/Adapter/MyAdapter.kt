@@ -50,9 +50,12 @@ class MyAdapter(
                 sendSMS(userData.name.toString(), userData.number.toString())
             }
             itemRv.image_more.setOnClickListener {
-                popupMenuBuild(itemRv.image_more,
-                    userData.name.toString(),
-                    userData.number.toString() , userData.id!!)
+                if (booleanAntiBag){
+                    popupMenuBuild(itemRv.image_more,
+                        userData.name.toString(),
+                        userData.number.toString() , userData.id!!)
+                    booleanAntiBag = false
+                }
             }
         }
     }
@@ -90,6 +93,11 @@ class MyAdapter(
 
             }
         })
+
+        menuPopupHelper.setOnDismissListener {
+            booleanAntiBag = true
+        }
+
         menuPopupHelper.show()
     }
 

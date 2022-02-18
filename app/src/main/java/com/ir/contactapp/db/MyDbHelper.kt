@@ -13,8 +13,8 @@ import com.ir.contactapp.db.Constants.NAME
 import com.ir.contactapp.db.Constants.NUMBER
 import com.ir.contactapp.db.Constants.TABLE_NAME
 
-class MyDbHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) ,
-MyDbInterface{
+class MyDbHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION),
+    MyDbInterface {
     override fun onCreate(db: SQLiteDatabase?) {
         val query =
             "create table $TABLE_NAME ($ID integer not null primary key autoincrement unique , $NAME text not null , $NUMBER text not null)"
@@ -30,48 +30,68 @@ MyDbInterface{
     override fun addContact(userData: UserData) {
         val dataBase = this.writableDatabase
         val contentValues = ContentValues()
-        contentValues.put(NAME , userData.name)
-        contentValues.put(NUMBER , userData.number)
-        dataBase.insert(TABLE_NAME , null , contentValues)
+        contentValues.put(NAME, userData.name)
+        contentValues.put(NUMBER, userData.number)
+        dataBase.insert(TABLE_NAME, null, contentValues)
         dataBase.close()
     }
 
-    override fun updateContact(context: Context , userData: UserData) {
-        val  database = this.writableDatabase
+
+    override fun updateContact(context: Context, userData: UserData) {
+        val database = this.writableDatabase
         val contentValues = ContentValues()
-        contentValues.put(NAME , userData.name)
-        contentValues.put(NUMBER , userData.number)
-       val result =  database.update(TABLE_NAME , contentValues , "id=?" , arrayOf(userData.id.toString()))
-        if (result == -1){
+        contentValues.put(NAME, userData.name)
+        contentValues.put(NUMBER, userData.number)
+        val result =
+            database.update(TABLE_NAME, contentValues, "id=?", arrayOf(userData.id.toString()))
+        if (result == -1) {
             Toast.makeText(context, "Failed to Update", Toast.LENGTH_SHORT).show()
-        }else{
+        } else {
             Toast.makeText(context, "Successfully Updated!", Toast.LENGTH_SHORT).show()
         }
     }
 
-    override fun deleteContact(context: Context, id:Int) {
-        val  database = this.writableDatabase
-        val result = database.delete(TABLE_NAME , "id=?" , arrayOf(id.toString()))
-        if (result == -1){
+    override fun deleteContact(context: Context, id: Int) {
+        val database = this.writableDatabase
+        val result = database.delete(TABLE_NAME, "id=?", arrayOf(id.toString()))
+        if (result == -1) {
             Toast.makeText(context, "Failed to Delete", Toast.LENGTH_SHORT).show()
-        }else{
+        } else {
             Toast.makeText(context, "Successfully Delete!", Toast.LENGTH_SHORT).show()
         }
     }
 
-    override fun getContact(): ArrayList<UserData> {
+    override fun searchContact( context: Context , string: String): ArrayList<UserData> {
         val arrayList = ArrayList<UserData>()
-        val query = "select * from $TABLE_NAME"
-        val dataBase = this.readableDatabase
-        val cursor = dataBase.rawQuery(query , null)
+        val query = "select * from $TABLE_NAME where $NAME like '$string%'"
+        val database = this.readableDatabase
+        val cursor = database.rawQuery(query, null)
 
         if (cursor.moveToFirst()){
             do {
                 val id = cursor.getInt(0)
                 val name = cursor.getString(1)
                 val number = cursor.getString(2)
-                arrayList.add(UserData(id , name , number))
+                arrayList.add(UserData(id, name, number))
             }while (cursor.moveToNext())
+        }
+
+        return arrayList
+    }
+
+    override fun getContact(): ArrayList<UserData> {
+        val arrayList = ArrayList<UserData>()
+        val query = "select * from $TABLE_NAME"
+        val dataBase = this.readableDatabase
+        val cursor = dataBase.rawQuery(query, null)
+
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(0)
+                val name = cursor.getString(1)
+                val number = cursor.getString(2)
+                arrayList.add(UserData(id, name, number))
+            } while (cursor.moveToNext())
         }
         return arrayList
     }
