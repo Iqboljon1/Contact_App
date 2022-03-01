@@ -1,10 +1,13 @@
 package com.ir.contactapp
 
+import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -14,11 +17,13 @@ import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
+import com.github.dhaval2404.imagepicker.ImagePicker
 import com.ir.contactapp.Adapter.MyAdapter
 import com.ir.contactapp.Interface.MyOnClickListener
 import com.ir.contactapp.Interface.MyOnClickListenerFromDelete
 import com.ir.contactapp.db.MyDbHelper
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.dialog_add_contact.*
 
 class MainActivity : AppCompatActivity() {
     lateinit var dialog: AlertDialog
@@ -89,6 +94,11 @@ class MainActivity : AppCompatActivity() {
 
         alertDialog.setOnCancelListener {
             booleanAntiBag = true
+        }
+
+        tvAddPhoto.setOnClickListener {
+            ImagePicker.with(this).galleryOnly().galleryMimeTypes(arrayOf("image/*")).crop().maxResultSize(400,400).start()
+
         }
 
         alertDialog.setView(view)
@@ -170,4 +180,14 @@ class MainActivity : AppCompatActivity() {
             })
         recycler.adapter = myAdapter
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val view = layoutInflater.inflate(R.layout.dialog_add_contact , null , false)
+        val imageView = view.findViewById<ImageView>(R.id.imageContact)
+        if (resultCode == Activity.RESULT_OK && requestCode == ImagePicker.REQUEST_CODE){
+            imageView.setImageURI(data!!.data)
+        }
+    }
+
 }

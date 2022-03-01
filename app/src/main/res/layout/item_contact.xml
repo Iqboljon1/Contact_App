@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:dragEdge="right"
-    app:mode="same_level">
+    app:mode="same_level"
+    tools:ignore="MissingClass">
 
     <LinearLayout
         android:layout_width="wrap_content"
