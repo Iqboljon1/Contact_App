@@ -83,6 +83,6 @@
         app:layout_constraintRight_toRightOf="parent"
         app:srcCompat="@drawable/ic_add"
         tools:ignore="SpeakableTextPresentCheck"
-        android:focusable="true" />
+        android:focusable="true"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
