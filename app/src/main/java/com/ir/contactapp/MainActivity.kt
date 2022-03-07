@@ -1,10 +1,16 @@
 package com.ir.contactapp
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.ImageView
@@ -14,16 +20,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.cardview.widget.CardView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.widget.addTextChangedListener
-import androidx.core.widget.doOnTextChanged
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.ir.contactapp.Adapter.MyAdapter
 import com.ir.contactapp.Interface.MyOnClickListener
 import com.ir.contactapp.Interface.MyOnClickListenerFromDelete
 import com.ir.contactapp.db.MyDbHelper
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.dialog_add_contact.*
 
 class MainActivity : AppCompatActivity() {
     lateinit var dialog: AlertDialog
@@ -34,8 +38,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         myDbHelper = MyDbHelper(this)
-        fab.supportImageTintList = ContextCompat.getColorStateList(this, R.color.white)
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_CONTACTS), 123)
+        }
 
+        fab.supportImageTintList = ContextCompat.getColorStateList(this, R.color.white)
         fab.setOnClickListener {
             if (booleanAntiBag) {
                 buildAlertDialog("", "", "Create Contact", "Add Photo", 0)
@@ -97,7 +106,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         tvAddPhoto.setOnClickListener {
-            ImagePicker.with(this).galleryOnly().galleryMimeTypes(arrayOf("image/*")).crop().maxResultSize(400,400).start()
+            ImagePicker.with(this).galleryOnly().galleryMimeTypes(arrayOf("image/*")).crop()
+                .maxResultSize(400, 400).start()
 
         }
 
@@ -108,9 +118,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun searchContact(string: String) {
-        val arrayList = ArrayList<UserData>()
-        arrayList.addAll(myDbHelper.searchContact(this, string))
-        var myAdapter = MyAdapter(this, arrayList, object : MyOnClickListener {
+        val arrayList = myDbHelper.searchContact(this, string)
+        val myAdapter = MyAdapter(this, arrayList, object : MyOnClickListener {
             override fun onClick(
                 stringName: String,
                 stringNumber: String,
@@ -155,8 +164,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        val arrayListContact = ArrayList<UserData>()
-        arrayListContact.addAll(myDbHelper.getContact())
+        val arrayListContact = myDbHelper.getContact()
 
         val myAdapter =
             MyAdapter(this, arrayListContact, object : MyOnClickListener {
@@ -179,15 +187,64 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         recycler.adapter = myAdapter
+
+    }
+
+    @SuppressLint("Recycle", "Range")
+    private fun loadContactFromDevice() {
+        val cursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            null,
+            null,
+            null,
+            null)
+        if (cursor!!.moveToFirst()) {
+            do {
+                val name =
+                    cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
+                val number =
+                    cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                val userData = UserData(name, number)
+                myDbHelper.addContact(userData)
+            } while (cursor.moveToNext())
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        val view = layoutInflater.inflate(R.layout.dialog_add_contact , null , false)
+        val view = layoutInflater.inflate(R.layout.dialog_add_contact, null, false)
         val imageView = view.findViewById<ImageView>(R.id.imageContact)
-        if (resultCode == Activity.RESULT_OK && requestCode == ImagePicker.REQUEST_CODE){
+        if (resultCode == Activity.RESULT_OK && requestCode == ImagePicker.REQUEST_CODE) {
             imageView.setImageURI(data!!.data)
         }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 123){
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED ){
+                if (!checkFirstTime()) {
+                    firstTime()
+                }
+            }
+        }
+    }
+
+    private fun checkFirstTime(): Boolean {
+        val sharedPreferences = this.getSharedPreferences("firstTime", Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean("firstTime", false)
+    }
+
+    @SuppressLint("CommitPrefEdits")
+    private fun firstTime() {
+        val sharedPreferences = this.getSharedPreferences("firstTime", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putBoolean("firstTime", true)
+        editor.apply()
+        loadContactFromDevice()
     }
 
 }

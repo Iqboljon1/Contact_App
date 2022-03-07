@@ -30,7 +30,7 @@ class MyAdapter(
     private val context: Context,
     private val arrayListContacts: ArrayList<UserData>,
     var myOnClickListener: MyOnClickListener,
-    var myOnClickListenerFromDelete: MyOnClickListenerFromDelete
+    var myOnClickListenerFromDelete: MyOnClickListenerFromDelete,
 ) :
     RecyclerView.Adapter<MyAdapter.VH>() {
 
@@ -50,10 +50,10 @@ class MyAdapter(
                 sendSMS(userData.name.toString(), userData.number.toString())
             }
             itemRv.image_more.setOnClickListener {
-                if (booleanAntiBag){
+                if (booleanAntiBag) {
                     popupMenuBuild(itemRv.image_more,
                         userData.name.toString(),
-                        userData.number.toString() , userData.id!!)
+                        userData.number.toString(), userData.id!!)
                     booleanAntiBag = false
                 }
             }
@@ -65,7 +65,7 @@ class MyAdapter(
         view: View,
         stringName: String,
         stringNumber: String,
-        id: Int
+        id: Int,
     ) {
         menuBuilder = MenuBuilder(context)
         val menuInflater = MenuInflater(context)
@@ -79,7 +79,7 @@ class MyAdapter(
                         myOnClickListener.onClick(stringName,
                             stringNumber,
                             "Update Contact",
-                            "Update Photo" , id)
+                            "Update Photo", id)
                     }
 
                     R.id.menu_delete -> {
