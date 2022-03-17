@@ -1,9 +1,9 @@
 package com.ir.contactapp.Adapter
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,46 +11,96 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.telephony.SmsManager
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.animation.AnimationUtils
+import android.view.*
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.ir.contactapp.Interface.MyOnClickListener
+import com.ir.contactapp.Interface.MyOnClickListenerFromDelete
 import com.ir.contactapp.R
 import com.ir.contactapp.UserData
 import kotlinx.android.synthetic.main.item_contact.view.*
-import java.net.URI
 
 class MyAdapter(
-    val context: Context,
-    val arrayListContacts: ArrayList<UserData>,
+    private val context: Context,
+    private val arrayListContacts: ArrayList<UserData>,
+    var myOnClickListener: MyOnClickListener,
+    var myOnClickListenerFromDelete: MyOnClickListenerFromDelete,
 ) :
     RecyclerView.Adapter<MyAdapter.VH>() {
 
-    lateinit var dialog: AlertDialog
+    private lateinit var dialog: AlertDialog
+    lateinit var menuBuilder: MenuBuilder
+    var booleanAntiBag = true
+
 
     inner class VH(var itemRv: View) : RecyclerView.ViewHolder(itemRv) {
         fun onBind(userData: UserData) {
-            val animation = AnimationUtils.loadAnimation(context, R.anim.item_anim)
-            itemRv.animation = animation
             itemRv.tv_name.text = userData.name
             itemRv.tv_number.text = userData.number
-            if (userData.image != 0) {
-                itemRv.image.setImageResource(userData.image!!)
-            }
             itemRv.btn_card_call.setOnClickListener {
                 makeCall(userData.number.toString())
             }
             itemRv.btn_card_sms.setOnClickListener {
                 sendSMS(userData.name.toString(), userData.number.toString())
             }
+            itemRv.image_more.setOnClickListener {
+                if (booleanAntiBag) {
+                    popupMenuBuild(itemRv.image_more,
+                        userData.name.toString(),
+                        userData.number.toString(), userData.id!!)
+                    booleanAntiBag = false
+                }
+            }
         }
     }
+
+    @SuppressLint("RestrictedApi")
+    private fun popupMenuBuild(
+        view: View,
+        stringName: String,
+        stringNumber: String,
+        id: Int,
+    ) {
+        menuBuilder = MenuBuilder(context)
+        val menuInflater = MenuInflater(context)
+        menuInflater.inflate(R.menu.popup_menu, menuBuilder)
+        val menuPopupHelper = MenuPopupHelper(context, menuBuilder, view)
+        menuPopupHelper.setForceShowIcon(true)
+        menuBuilder.setCallback(object : MenuBuilder.Callback {
+            override fun onMenuItemSelected(menu: MenuBuilder, item: MenuItem): Boolean {
+                when (item.itemId) {
+                    R.id.menu_edit -> {
+                        myOnClickListener.onClick(stringName,
+                            stringNumber,
+                            "Update Contact",
+                            "Update Photo", id)
+                    }
+
+                    R.id.menu_delete -> {
+                        myOnClickListenerFromDelete.onClickDelete(id)
+                    }
+                }
+                return true
+            }
+
+            override fun onMenuModeChange(menu: MenuBuilder) {
+
+            }
+        })
+
+        menuPopupHelper.setOnDismissListener {
+            booleanAntiBag = true
+        }
+
+        menuPopupHelper.show()
+    }
+
 
     private fun makeCall(stringNumber: String) {
         if (ActivityCompat.checkSelfPermission(context,
@@ -76,12 +126,15 @@ class MyAdapter(
                 arrayOf(Manifest.permission.RECEIVE_SMS, Manifest.permission.SEND_SMS),
                 111)
         } else {
-            BuildDialogSendMessage(stringName, stringNumber)
-            dialog.show()
+            if (booleanAntiBag) {
+                buildDialogSendMessage(stringName, stringNumber)
+                dialog.show()
+                booleanAntiBag = false
+            }
         }
     }
 
-    private fun BuildDialogSendMessage(stringName: String, stringNumber: String) {
+    private fun buildDialogSendMessage(stringName: String, stringNumber: String) {
         val alertDialog = AlertDialog.Builder(context)
         val view = LayoutInflater.from(context).inflate(R.layout.dialog_send_message, null, false)
         val contactName = view.findViewById<TextView>(R.id.tv_name)
@@ -90,7 +143,11 @@ class MyAdapter(
         val btnCardSend = view.findViewById<CardView>(R.id.btn_card_send)
 
         btnCardSend.setOnClickListener {
-            SendMessage(stringNumber, edtTextMessage.text.toString().trim())
+            sendMessage(stringNumber, edtTextMessage.text.toString().trim())
+        }
+
+        alertDialog.setOnCancelListener {
+            booleanAntiBag = true
         }
 
         contactName.text = stringName
@@ -101,7 +158,7 @@ class MyAdapter(
         dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
     }
 
-    private fun SendMessage(number: String, message: String) {
+    private fun sendMessage(number: String, message: String) {
         try {
             val smsManager = SmsManager.getDefault()
             smsManager.sendTextMessage(number, "ME", message, null, null)
